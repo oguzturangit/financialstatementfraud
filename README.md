@@ -10,7 +10,7 @@ This project involves detecting accounting fraud in publicly traded U.S. firms u
 
 ## Scripts
 
-- `fraud_detection.ipynb`: Jupyter Notebook containing the Python code to preprocess the data, train the RUSBoost model, and visualize the results.
+- `FraudDetectionRUSBoost.ipynb`: Jupyter Notebook containing the Python code to preprocess the data, train the RUSBoost model, and visualize the results.
 
 ## Usage
 
