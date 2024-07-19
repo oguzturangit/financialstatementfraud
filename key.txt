@@ -1,0 +1,194 @@
+
+
+1. **fyear**: Fiscal year of the financial data.
+2. **gvkey**: Global Company Key, a unique identifier for each company.
+3. **p_aaer**: Identifier for AAER (Accounting and Auditing Enforcement Releases) cases related to fraud.
+4. **misstate**: Binary indicator where 1 indicates misstatement (fraud) and 0 indicates no misstatement.
+5. **act**: Current assets.
+6. **ap**: Accounts payable.
+7. **at**: Total assets.
+8. **ceq**: Common equity.
+9. **che**: Cash and short-term investments.
+10. **cogs**: Cost of goods sold.
+11. **csho**: Common shares outstanding.
+12. **dlc**: Debt in current liabilities.
+13. **dltis**: Long-term debt issuance.
+14. **dltt**: Long-term debt.
+15. **dp**: Depreciation.
+16. **ib**: Income before extraordinary items.
+17. **invt**: Inventory.
+18. **ivao**: Investments and advances - other.
+19. **ivst**: Short-term investments.
+20. **lct**: Current liabilities.
+21. **lt**: Total liabilities.
+22. **ni**: Net income.
+23. **ppegt**: Property, plant, and equipment total (net).
+24. **pstk**: Preferred stock.
+25. **re**: Retained earnings.
+26. **rect**: Receivables total.
+27. **sale**: Sales/turnover (net).
+28. **sstk**: Sale of common and preferred stock.
+29. **txp**: Income taxes payable.
+30. **txt**: Total income taxes.
+31. **xint**: Interest and related expenses.
+32. **prcc_f**: Price close - annual fiscal.
+33. **dch_wc**: Change in working capital.
+34. **ch_rsst**: Change in retained earnings (scaled by total assets).
+35. **dch_rec**: Change in receivables.
+36. **dch_inv**: Change in inventory.
+37. **soft_assets**: Soft assets ratio (intangible assets / total assets).
+38. **ch_cs**: Change in cash and short-term investments.
+39. **ch_cm**: Change in common shares outstanding.
+40. **ch_roa**: Change in return on assets.
+41. **issue**: Indicator if new equity or debt was issued.
+42. **bm**: Book-to-market ratio (equity / market capitalization).
+43. **dpi**: Depreciation index.
+44. **reoa**: Return on assets (net income / total assets).
+45. **EBIT**: Earnings before interest and taxes / total assets.
+46. **ch_fcf**: Change in free cash flow.
+
+### Updating the README.md
+
+Here’s the updated `README.md` with these column descriptions:
+
+```markdown
+# Fraud Detection Project
+
+This project involves detecting accounting fraud in publicly traded U.S. firms using a machine learning approach with the RUSBoost algorithm.
+
+## Data
+
+### `data_FraudDetection_JAR2020.csv`
+
+This file contains financial data and fraud indicators for various firms. Below are the meanings of the columns:
+
+- **fyear**: Fiscal year of the financial data
+- **gvkey**: Global Company Key, a unique identifier for each company
+- **p_aaer**: Identifier for AAER (Accounting and Auditing Enforcement Releases) cases related to fraud
+- **misstate**: Binary indicator where 1 indicates misstatement (fraud) and 0 indicates no misstatement
+- **act**: Current assets
+- **ap**: Accounts payable
+- **at**: Total assets
+- **ceq**: Common equity
+- **che**: Cash and short-term investments
+- **cogs**: Cost of goods sold
+- **csho**: Common shares outstanding
+- **dlc**: Debt in current liabilities
+- **dltis**: Long-term debt issuance
+- **dltt**: Long-term debt
+- **dp**: Depreciation
+- **ib**: Income before extraordinary items
+- **invt**: Inventory
+- **ivao**: Investments and advances - other
+- **ivst**: Short-term investments
+- **lct**: Current liabilities
+- **lt**: Total liabilities
+- **ni**: Net income
+- **ppegt**: Property, plant, and equipment total (net)
+- **pstk**: Preferred stock
+- **re**: Retained earnings
+- **rect**: Receivables total
+- **sale**: Sales/turnover (net)
+- **sstk**: Sale of common and preferred stock
+- **txp**: Income taxes payable
+- **txt**: Total income taxes
+- **xint**: Interest and related expenses
+- **prcc_f**: Price close - annual fiscal
+- **dch_wc**: Change in working capital
+- **ch_rsst**: Change in retained earnings (scaled by total assets)
+- **dch_rec**: Change in receivables
+- **dch_inv**: Change in inventory
+- **soft_assets**: Soft assets ratio (intangible assets / total assets)
+- **ch_cs**: Change in cash and short-term investments
+- **ch_cm**: Change in common shares outstanding
+- **ch_roa**: Change in return on assets
+- **issue**: Indicator if new equity or debt was issued
+- **bm**: Book-to-market ratio (equity / market capitalization)
+- **dpi**: Depreciation index
+- **reoa**: Return on assets (net income / total assets)
+- **EBIT**: Earnings before interest and taxes / total assets
+- **ch_fcf**: Change in free cash flow
+
+### `AAER_firm_year.csv`
+
+Initial accounting fraud sample from the SEC’s AAERs.
+
+### `identifiers.csv`
+
+Contains identifiers used in the project.
+
+## Usage
+
+1. **Data Preprocessing**: Handle missing values using `SimpleImputer`.
+2. **Model Training and Evaluation**: Train the RUSBoost model using `imblearn` and evaluate it using various metrics.
+3. **Results Analysis**: Visualize the results using ROC curve, precision-recall curve, feature importance plot, and confusion matrix.
+
+## Example Code
+
+### Import Libraries and Read Data
+```python
+import pandas as pd
+from imblearn.ensemble import RUSBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import roc_auc_score, confusion_matrix, roc_curve, auc, precision_recall_curve, average_precision_score, ConfusionMatrixDisplay
+from sklearn.impute import SimpleImputer
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Read and preprocess data
+data_file_path = r'C:\Users\abdog\DEDA_Project\FraudDetection-master\data_FraudDetection_JAR2020.csv'
+data = pd.read_csv(data_file_path)
+
+train_data = data[(data['fyear'] >= 1991) & (data['fyear'] <= 1999)]
+valid_data = data[(data['fyear'] >= 2000) & (data['fyear'] <= 2001)]
+
+X_train = train_data.iloc[:, 4:]
+y_train = train_data['misstate']
+X_valid = valid_data.iloc[:, 4:]
+y_valid = valid_data['misstate']
+
+# Handle serial frauds
+valid_paaers = valid_data[valid_data['misstate'] != 0]['p_aaer'].unique()
+train_data.loc[train_data['p_aaer'].isin(valid_paaers), 'misstate'] = 0
+X_train = train_data.iloc[:, 4:]
+y_train = train_data['misstate']
+
+# Handle missing values
+imputer = SimpleImputer(strategy='mean')
+X_train = imputer.fit_transform(X_train)
+X_valid = imputer.transform(X_valid)
+
+# Train the model
+rusboost = RUSBoostClassifier(
+    estimator=DecisionTreeClassifier(min_samples_leaf=5),
+    n_estimators=300,
+    learning_rate=0.1,
+    random_state=0
+)
+rusboost.fit(X_train, y_train)
+
+# Predict and evaluate
+y_pred = rusboost.predict(X_valid)
+y_dec_values = rusboost.predict_proba(X_valid)[:, 1]
+auc_score = roc_auc_score(y_valid, y_dec_values)
+print(f'AUC: {auc_score:.4f}')
+
+# Visualization functions
+def plot_roc_curve(y_true, y_dec_values):
+    fpr, tpr, _ = roc_curve(y_true, y_dec_values)
+    roc_auc = auc(fpr, tpr)
+    plt.plot(fpr, tpr, label=f'ROC curve (AUC = {roc_auc:.2f})')
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('ROC Curve')
+    plt.legend(loc='lower right')
+    plt.show()
+
+def plot_precision_recall_curve(y_true, y_dec_values):
+    precision, recall, _ = precision_recall_curve(y_true, y_dec_values)
+    avg_precision = average_precision_score(y_true, y_dec_values)
+    plt.plot(recall, precision, label=f'Precision-Recall curve (AP = {avg_precision:.2f})')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision
